@@ -1,41 +1,67 @@
-"use client"
-import React, { useState } from 'react';
-import { Keypair, Transaction, PublicKey, Connection, clusterApiUrl, TransactionInstruction } from '@solana/web3.js';
+"use client";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Connection,
+  Transaction,
+  PublicKey,
+  clusterApiUrl,
+  TransactionInstruction,
+} from "@solana/web3.js";
+import { useWallet } from "@solana/wallet-adapter-react";
+
+// Set up the connection to Solana Devnet
+const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+const programId = new PublicKey("CFv7S7oqqJNP24damGJA4XpHfSMJLzyhCSNjkRmXMjAe"); // Replace with your contract's Program ID
 
 const Page = () => {
-  const [signature, setSignature] = useState('');
+  const [signature, setSignature] = useState("");
 
-  // Set up the connection to Solana Devnet
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
-  const fromWallet = Keypair.generate(); // Replace with real wallet if needed
-  const toWallet = Keypair.generate();
+  // Get the wallet object using useWallet hook
+  const { publicKey, sendTransaction, connected } = useWallet();
 
-  const programId = new PublicKey('CFv7S7oqqJNP24damGJA4XpHfSMJLzyhCSNjkRmXMjAe'); // Replace with your contract's Program ID
+  const toWallet = new PublicKey(
+    "CFv7S7oqqJNP24damGJA4XpHfSMJLzyhCSNjkRmXMjAe",
+  ); // The recipient's wallet (replace with actual)
 
-  const createToken = async () => {
-    const userPublicKey = fromWallet.publicKey;
+  const createToken = useCallback(async () => {
+    if (!publicKey) {
+      alert("Please connect your wallet!");
+      return;
+    }
 
+    // Create transaction instruction
     const instruction = new TransactionInstruction({
       keys: [
-        { pubkey: userPublicKey, isSigner: true, isWritable: true },
-        { pubkey: toWallet.publicKey, isSigner: false, isWritable: true },
+        { pubkey: publicKey, isSigner: true, isWritable: true }, // Use the connected wallet's public key
+        { pubkey: toWallet, isSigner: false, isWritable: true },
       ],
       programId,
-      data: Buffer.from([]), // Add your contract's function parameters here
+      data: Buffer.from([]), // Add any arguments required by your smart contract method
     });
 
+    // Create the transaction
     const transaction = new Transaction().add(instruction);
-    const signature = await connection.sendTransaction(transaction, [fromWallet]);
 
-    setSignature(signature);
-  };
+    // Send the transaction using the connected wallet
+    try {
+      const txSignature = await sendTransaction(transaction, connection);
+      setSignature(txSignature);
+      console.log("Transaction sent with signature:", txSignature);
+    } catch (error) {
+      console.error("Transaction failed:", error);
+    }
+  }, [publicKey, sendTransaction, toWallet]);
 
   return (
     <div>
-      <button onClick={createToken}>Create Token</button>
+      <h1>Solana WalletConnect Example</h1>
+      {connected && <button onClick={createToken}>Create Token</button>}
       {signature && <p>Transaction signature: {signature}</p>}
     </div>
   );
 };
 
-export default Page;
+// Wrap the page with ConnectionProvider and WalletProvider
+export default function WrappedPage() {
+  return <Page />;
+}

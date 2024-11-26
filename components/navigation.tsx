@@ -40,7 +40,7 @@ export default function Navigation() {
       animate={{ y: 0 }}
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
-      <div className="container flex h-16 items-center">
+      <div className="container flex h-16 justify-between px-5">
         <Link href="/" className="flex items-center space-x-2 mr-6">
           <motion.div
             whileHover={{ rotate: 360 }}
@@ -57,7 +57,7 @@ export default function Navigation() {
           <NavigationMenuList>
             <NavigationMenuItem>
               <Link href="/explore" legacyBehavior passHref>
-                <NavigationMenuLink 
+                <NavigationMenuLink
                   className={navigationMenuTriggerStyle()}
                   active={isActive("/explore")}
                 >
@@ -89,7 +89,7 @@ export default function Navigation() {
 
             <NavigationMenuItem>
               <Link href="/exclusive" legacyBehavior passHref>
-                <NavigationMenuLink 
+                <NavigationMenuLink
                   className={navigationMenuTriggerStyle()}
                   active={isActive("/exclusive")}
                 >
