@@ -32,7 +32,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { TradeHistory } from "@/components/trade-history";
 
-export default function TradePage() {
+const Page = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const [amount, setAmount] = useState("");
@@ -51,7 +51,9 @@ export default function TradePage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold">$ALEX</h1>
-                <p className="text-sm text-muted-foreground">Alex Rivers Token</p>
+                <p className="text-sm text-muted-foreground">
+                  Alex Rivers Token
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold">$2.45</p>
@@ -87,14 +89,14 @@ export default function TradePage() {
               <TabsContent value="buy" className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <label className="text-sm font-medium">Amount (USD)</label>
+                    <label className="text-sm font-medium">Amount (USDT)</label>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
                           <Info className="h-4 w-4 text-muted-foreground" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Enter the amount in USD you want to spend</p>
+                          <p>Enter the amount in USDT you want to spend</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -106,7 +108,8 @@ export default function TradePage() {
                     onChange={(e) => setAmount(e.target.value)}
                   />
                   <p className="text-sm text-muted-foreground">
-                    You will receive: {amount ? (Number(amount) / 2.45).toFixed(2) : "0"} $ALEX
+                    You will receive:{" "}
+                    {amount ? (Number(amount) / 2.45).toFixed(2) : "0"} $ALEX
                   </p>
                 </div>
 
@@ -136,7 +139,8 @@ export default function TradePage() {
                     onChange={(e) => setAmount(e.target.value)}
                   />
                   <p className="text-sm text-muted-foreground">
-                    You will receive: ${amount ? (Number(amount) * 2.45).toFixed(2) : "0"}
+                    You will receive: $
+                    {amount ? (Number(amount) * 2.45).toFixed(2) : "0"}
                   </p>
                 </div>
 
@@ -151,7 +155,11 @@ export default function TradePage() {
                   </div>
                 </div>
 
-                <Button className="w-full" variant="destructive" onClick={handleTrade}>
+                <Button
+                  className="w-full"
+                  variant="destructive"
+                  onClick={handleTrade}
+                >
                   <ArrowDownRight className="mr-2 h-4 w-4" /> Sell Tokens
                 </Button>
               </TabsContent>
@@ -250,7 +258,9 @@ export default function TradePage() {
                 <span className="font-medium">1,245</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Circulating Supply</span>
+                <span className="text-muted-foreground">
+                  Circulating Supply
+                </span>
                 <span className="font-medium">980,000</span>
               </div>
             </div>
@@ -259,4 +269,5 @@ export default function TradePage() {
       </div>
     </div>
   );
-}
+};
+export default Page;

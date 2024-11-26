@@ -33,7 +33,7 @@ export default async function ExplorePage() {
   const creators = await getCreators();
 
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-5">
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Explore Creators</h1>
@@ -46,10 +46,7 @@ export default async function ExplorePage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search creators..."
-                className="pl-9"
-              />
+              <Input placeholder="Search creators..." className="pl-9" />
             </div>
             <div className="flex gap-4">
               <Select defaultValue="all">

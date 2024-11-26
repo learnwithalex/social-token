@@ -57,12 +57,14 @@ export function CreatorCard({ creator }: CreatorCardProps) {
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-4">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={creator.avatar_url} alt={creator.name} />
+            <AvatarImage src={creator.profile_pic} alt={creator.name} />
             <AvatarFallback>{creator.name[0]}</AvatarFallback>
           </Avatar>
           <div>
             <h3 className="font-semibold">{creator.name}</h3>
-            <p className="text-sm text-muted-foreground">{creator.handle}</p>
+            <p className="text-sm text-muted-foreground">
+              {creator.name.toLowerCase()}
+            </p>
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={handleFollow}>
@@ -71,29 +73,23 @@ export function CreatorCard({ creator }: CreatorCardProps) {
       </div>
 
       <p className="mt-4 text-sm text-muted-foreground line-clamp-2">
-        {creator.bio}
+        Am a Chill Guy
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {creator.categories.map((category) => (
-          <Badge key={category} variant="secondary">
-            {category}
-          </Badge>
-        ))}
+        <Badge key={`tech`} variant="secondary">
+          Tech
+        </Badge>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 pt-4 border-t">
         <div>
           <p className="text-sm font-medium">Followers</p>
-          <p className="text-2xl font-bold">
-            {creator.followers_count.toLocaleString()}
-          </p>
+          <p className="text-2xl font-bold">1</p>
         </div>
         <div>
           <p className="text-sm font-medium">Token Price</p>
-          <p className="text-2xl font-bold">
-            ${creator.token_price.toFixed(2)}
-          </p>
+          <p className="text-2xl font-bold">1</p>
         </div>
       </div>
 
