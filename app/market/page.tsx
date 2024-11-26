@@ -10,7 +10,7 @@ import { Search, TrendingUp } from "lucide-react";
 
 export default function MarketPage() {
   return (
-    <div className="container py-10">
+    <div className="container py-10 px-5">
       <div className="flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div>
