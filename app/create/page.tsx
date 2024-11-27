@@ -21,6 +21,23 @@ import { Coins, ImagePlus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { useAccount, useDisconnect } from "wagmi";
+import {
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  sendAndConfirmTransaction,
+  SystemProgram,
+  Transaction,
+  PublicKey,
+} from "@solana/web3.js";
+import {
+  createInitializeMintInstruction,
+  TOKEN_PROGRAM_ID,
+  MINT_SIZE,
+  getMinimumBalanceForRentExemptMint,
+  createMint,
+} from "@solana/spl-token";
+import bs58 from "bs58";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
@@ -29,6 +46,39 @@ const formSchema = z.object({
   initialSupply: z.string().min(1),
   price: z.string().min(1),
 });
+
+async function mintToken(walletAddress: string) {
+  const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+  const feePayer = Keypair.fromSecretKey(
+    bs58.decode("588FU4PktJWfGfxtzpAAXywSNt74AvtroVzGfKkVN1LwRuvHwKGr851uH8czM5qm4iqLbs1kKoMKtMJG4ATR7Ld2")
+  );
+
+  const mint = Keypair.generate();
+  const transaction = new Transaction().add(
+    SystemProgram.createAccount({
+      fromPubkey: feePayer.publicKey,
+      newAccountPubkey: mint.publicKey,
+      space: MINT_SIZE,
+      lamports: await getMinimumBalanceForRentExemptMint(connection),
+      programId: TOKEN_PROGRAM_ID,
+    }),
+    createInitializeMintInstruction(
+      mint.publicKey,
+      8,
+      new PublicKey(walletAddress),
+      new PublicKey(walletAddress)
+    )
+  );
+
+  const transactionSignature = await sendAndConfirmTransaction(
+    connection,
+    transaction,
+    [feePayer, mint]
+  );
+
+  console.log(`Mint created: ${mint.publicKey.toBase58()}`);
+  return mint.publicKey.toBase58();
+}
 
 export default function CreateToken() {
   const { toast } = useToast();
@@ -56,17 +106,20 @@ export default function CreateToken() {
       });
       return;
     }
-    setIsLoading(true); // Set loading state to true
+    setIsLoading(true);
     try {
+      // Call the mintToken function to create a new mint using the connected wallet address
+      const mintKey = await mintToken(address!.toString()); // Pass the connected wallet address
+
       // Upload profile picture to Supabase storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("token-images") // Replace with your Supabase bucket name
+        .from("token-images")
         .upload(`tokens/${values.name}-${Date.now()}`, profilePic);
 
       if (uploadError) throw uploadError;
 
       const tokenIconUrl = supabase.storage
-        .from("profile-pictures")
+        .from("token-images")
         .getPublicUrl(uploadData.path).data?.publicUrl;
 
       const { data, error } = await supabase.from("tokens").insert([
@@ -78,6 +131,7 @@ export default function CreateToken() {
           price: values.price,
           token_icon: tokenIconUrl,
           creator_wallet: address,
+          mint_key: mintKey, // Save the mint key to the database
         },
       ]);
 
@@ -93,7 +147,7 @@ export default function CreateToken() {
     } catch (error) {
       console.error("Unexpected error:", error);
     } finally {
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false);
     }
   }
 

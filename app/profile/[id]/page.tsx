@@ -156,14 +156,14 @@ export default function CreatorProfile() {
               <TabsTrigger value="holders" className="flex-1">Token Holders</TabsTrigger>
             </TabsList>
             <TabsContent value="content">
-              <ContentFeed />
+              <ContentFeed creatorId={""} />
             </TabsContent>
             <TabsContent value="exclusive">
-              <ExclusiveContent creatorId={creatorId} />
+              <ExclusiveContent creatorId={creatorId as string} />
             </TabsContent>
             <TabsContent value="holders">
               <Card className="p-6">
-                <TokenHolders />
+                <TokenHolders tokenId={""} />
               </Card>
             </TabsContent>
           </Tabs>

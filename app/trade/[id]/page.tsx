@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,40 +31,75 @@ import {
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { TradeHistory } from "@/components/trade-history";
+import { supabase } from "@/lib/supabase";
+
+// Define the Token interface
+interface Token {
+  name: string;
+  description: string;
+  price: number;
+  changePercentage: number;
+  symbol: string;
+  // Add other properties as needed
+}
 
 const Page = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const [amount, setAmount] = useState("");
   const defaultTab = searchParams.get("action") || "buy";
+  const [tokens, setTokens] = useState<any[]>([]);
+  const [selectedToken, setSelectedToken] = useState<Token | null>(null);
 
-  const handleTrade = () => {
-    // Handle trade logic
-    console.log("Trading:", amount);
+  useEffect(() => {
+    const fetchTokens = async () => {
+      const { data, error } = await supabase
+        .from("tokens")
+        .select("*")
+        .limit(1);
+
+      if (error) {
+        console.error("Error fetching tokens:", error);
+      } else {
+        setTokens(data as any[]);
+        setSelectedToken(data[0]);
+      }
+    };
+
+    fetchTokens();
+  }, []);
+
+  const handleTrade = async () => {
+    if (selectedToken) {
+      const programId = "YOUR_PROGRAM_ID";
+      console.log("Trading:", selectedToken);
+    }
   };
 
   return (
     <div className="container max-w-7xl py-10 px-4 sm:px-6">
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold">$ALEX</h1>
-                <p className="text-sm text-muted-foreground">
-                  Alex Rivers Token
-                </p>
+          {selectedToken && (
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-2xl font-bold">${selectedToken.symbol.toUpperCase()}</h1>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedToken.description}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold">${selectedToken.price}</p>
+                  <p className="text-sm text-green-500 flex items-center justify-end">
+                    <ArrowUpRight className="h-4 w-4 mr-1" />
+                    +{selectedToken.changePercentage}%
+                  </p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold">$2.45</p>
-                <p className="text-sm text-green-500 flex items-center justify-end">
-                  <ArrowUpRight className="h-4 w-4 mr-1" />
-                  +12.5%
-                </p>
-              </div>
-            </div>
-            <TokenChart />
-          </Card>
+              <TokenChart />
+            </Card>
+          )}
 
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -116,7 +151,7 @@ const Page = () => {
                 <div className="p-4 bg-muted rounded-lg space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Exchange Rate</span>
-                    <span>1 $ALEX = $2.45</span>
+                    <span>1 ${selectedToken?.symbol.toUpperCase() || "Token"} = ${selectedToken?.price.toFixed(2) || 0.00}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Network Fee</span>
@@ -125,13 +160,13 @@ const Page = () => {
                 </div>
 
                 <Button className="w-full" onClick={handleTrade}>
-                  <Wallet className="mr-2 h-4 w-4" /> Buy Tokens
+                  <Wallet className="mr-2 h-4 w-4" /> Trade ${selectedToken?.symbol.toUpperCase() || "Token"}
                 </Button>
               </TabsContent>
 
               <TabsContent value="sell" className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Amount ($ALEX)</label>
+                  <label className="text-sm font-medium">Amount (${selectedToken?.symbol.toUpperCase() || "Token"})</label>
                   <Input
                     type="number"
                     placeholder="0.00"
@@ -140,14 +175,14 @@ const Page = () => {
                   />
                   <p className="text-sm text-muted-foreground">
                     You will receive: $
-                    {amount ? (Number(amount) * 2.45).toFixed(2) : "0"}
+                    {amount ? (Number(amount) * (selectedToken?.price || 0)).toFixed(2) : "0"}
                   </p>
                 </div>
 
                 <div className="p-4 bg-muted rounded-lg space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Exchange Rate</span>
-                    <span>1 $ALEX = $2.45</span>
+                    <span>1 ${selectedToken?.symbol.toUpperCase() || "Token"} = ${selectedToken?.price.toFixed(2) || 0.00}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Network Fee</span>

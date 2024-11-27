@@ -17,7 +17,8 @@ interface Post {
 }
 
 interface ContentFeedProps {
-  posts: Post[];
+  posts?: Post[];
+  creatorId: string;
 }
 
 const SAMPLE_POSTS: Post[] = [

@@ -143,7 +143,7 @@ export function ConnectWallet() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <a href="/profile">Profile</a>
+              <a href={`/profile/user/${address}`}>Profile</a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <a href="/portfolio">Portfolio</a>

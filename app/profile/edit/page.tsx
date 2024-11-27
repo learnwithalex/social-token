@@ -22,17 +22,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSupabaseMutation, useSupabaseQuery } from "@/hooks/use-supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { ImagePlus, Loader2, X } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { randomUUID } from "node:crypto";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
   handle: z.string().min(2).max(30),
   bio: z.string().max(500),
-  avatar_url: z.string().url().optional(),
-  website: z.string().url().optional().or(z.literal("")),
-  twitter: z.string().optional(),
-  instagram: z.string().optional(),
+  profile_pic: z.string().url().optional(),
   categories: z.array(z.string()),
 });
+
+// Extend the existing type to include updated_at
+type ProfileUpdate = z.infer<typeof formSchema> & { updated_at: string };
 
 export default function EditProfilePage() {
   const { address } = useAccount();
@@ -51,14 +53,11 @@ export default function EditProfilePage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: profile?.name || "",
-      handle: profile?.handle || "",
-      bio: profile?.bio || "",
-      avatar_url: profile?.avatar_url || "",
-      website: profile?.website || "",
-      twitter: profile?.twitter || "",
-      instagram: profile?.instagram || "",
-      categories: profile?.categories || [],
+      name: profile[0]?.name || "",
+      handle: profile[0]?.name.toLowerCase() || "",
+      bio: profile[0]?.bio || "",
+      profile_pic: profile[0]?.profile_pic || "",
+      categories: profile[0]?.categories || [],
     },
   });
 
@@ -76,7 +75,7 @@ export default function EditProfilePage() {
       await update("creators", address, {
         ...values,
         updated_at: new Date().toISOString(),
-      });
+      } as ProfileUpdate);
 
       toast({
         title: "Success",
@@ -97,9 +96,18 @@ export default function EditProfilePage() {
 
     // Here you would typically upload to your storage solution
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       setAvatarPreview(reader.result as string);
-      form.setValue("avatar_url", "https://example.com/placeholder.jpg"); // Replace with actual upload URL
+      const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("contents") // Replace with your Supabase bucket name
+      .upload(`contents/${randomUUID()}-${Date.now()}`, file);
+
+    if (uploadError) throw uploadError;
+
+    const tokenIconUrl = supabase.storage
+      .from("contents")
+      .getPublicUrl(uploadData.path).data?.publicUrl;
+      form.setValue("profile_pic", "https://example.com/placeholder.jpg"); // Replace with actual upload URL
     };
     reader.readAsDataURL(file);
   };
@@ -139,11 +147,11 @@ export default function EditProfilePage() {
               <div className="relative">
                 <Avatar className="h-24 w-24">
                   <AvatarImage
-                    src={avatarPreview || profile?.avatar_url}
+                    src={avatarPreview || profile[0]?.profile_pic}
                     alt="Profile"
                   />
                   <AvatarFallback>
-                    {profile?.name?.[0] || address?.[0]}
+                    {profile[0]?.name?.[0] || address?.[0]}
                   </AvatarFallback>
                 </Avatar>
                 <Button
@@ -216,35 +224,7 @@ export default function EditProfilePage() {
               )}
             />
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="website"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="twitter"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Twitter</FormLabel>
-                    <FormControl>
-                      <Input placeholder="@handle" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+           
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (

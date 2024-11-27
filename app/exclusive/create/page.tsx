@@ -28,6 +28,7 @@ import {
 import { useSupabaseMutation } from "@/hooks/use-supabase";
 import { useToast } from "@/components/ui/use-toast";
 import { ImagePlus, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const formSchema = z.object({
   title: z.string().min(2).max(100),
@@ -103,9 +104,19 @@ export default function CreateExclusiveContent() {
     // Here you would typically upload to your storage solution
     // For now, we'll just create a local preview
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       setImagePreview(reader.result as string);
-      form.setValue("imageUrl", "https://example.com/placeholder.jpg"); // Replace with actual upload URL
+      // Upload profile picture to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("contents") // Replace with your Supabase bucket name
+        .upload(`exclusive-contents/${Date.now()}`, file);
+
+      if (uploadError) throw uploadError;
+
+      const tokenIconUrl = supabase.storage
+        .from("contents")
+        .getPublicUrl(uploadData.path).data?.publicUrl;
+      form.setValue("imageUrl", tokenIconUrl); // Replace with actual upload URL
     };
     reader.readAsDataURL(file);
   };

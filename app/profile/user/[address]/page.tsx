@@ -41,10 +41,11 @@ export default function ProfilePage() {
   });
 
   const { data: token } = useSupabaseQuery("tokens", {
-    filter: { column: "creator_id", value: params.address },
+    filter: { column: "creator_wallet", value: params.address },
     select: "*",
   });
 
+  console.log(token)
   if (loading) {
     return (
       <div className="container max-w-7xl py-10">
@@ -93,64 +94,31 @@ export default function ProfilePage() {
         <Card className="p-6 lg:col-span-1 h-fit sticky top-20">
           <div className="flex flex-col items-center text-center">
             <Avatar className="h-24 w-24 mb-4">
-              <AvatarImage src={profile.avatar_url} alt={profile.name} />
-              <AvatarFallback>{profile.name[0]}</AvatarFallback>
+              <AvatarImage src={profile[0].profile_pic} alt={profile[0].name} />
+              <AvatarFallback>{profile[0].name[0]}</AvatarFallback>
             </Avatar>
-            <h1 className="text-2xl font-bold">{profile.name}</h1>
-            <p className="text-muted-foreground">{profile.handle}</p>
+            <h1 className="text-2xl font-bold">{profile[0].name}</h1>
+            <p className="text-muted-foreground">{profile[0].handle}</p>
 
             <div className="flex flex-wrap gap-2 mt-4 justify-center">
-              {profile.categories?.map((category: string) => (
+              {profile[0].categories?.map((category: string) => (
                 <Badge key={category} variant="secondary">
                   {category}
                 </Badge>
               ))}
             </div>
 
-            <p className="mt-4 text-sm">{profile.bio}</p>
+            <p className="mt-4 text-sm">{profile[0].bio}</p>
 
-            {profile.website || profile.twitter || profile.instagram ? (
-              <div className="flex gap-4 mt-4">
-                {profile.website && (
-                  <a
-                    href={profile.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Globe className="h-5 w-5" />
-                  </a>
-                )}
-                {profile.twitter && (
-                  <a
-                    href={`https://twitter.com/${profile.twitter}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Twitter className="h-5 w-5" />
-                  </a>
-                )}
-                {profile.instagram && (
-                  <a
-                    href={`https://instagram.com/${profile.instagram}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <Instagram className="h-5 w-5" />
-                  </a>
-                )}
-              </div>
-            ) : null}
+            
 
             <div className="flex gap-4 mt-6">
               <div className="text-center">
-                <p className="text-2xl font-bold">{profile.followers_count}</p>
+                <p className="text-2xl font-bold">{profile[0].followers_count}</p>
                 <p className="text-sm text-muted-foreground">Followers</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">{profile.following_count}</p>
+                <p className="text-2xl font-bold">{profile[0].following_count}</p>
                 <p className="text-sm text-muted-foreground">Following</p>
               </div>
             </div>
@@ -181,20 +149,20 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">Price</p>
-                    <p className="font-bold">${token.price}</p>
+                    <p className="font-bold">${token[0].price}</p>
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">Market Cap</p>
-                    <p className="font-bold">${token.market_cap}</p>
+                    <p className="font-bold">${token[0].market_cap}</p>
                   </div>
                   <div className="text-center col-span-2">
                     <p className="text-sm text-muted-foreground">24h Volume</p>
-                    <p className="font-bold">${token.volume_24h}</p>
+                    <p className="font-bold">${token[0].volume_24h}</p>
                   </div>
                 </div>
                 <div className="mt-4">
                   <Button className="w-full" asChild>
-                    <Link href={`/trade/${token.id}`}>
+                    <Link href={`/trade/${token[0].id}`}>
                       Trade Token <ArrowUpRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -227,17 +195,17 @@ export default function ProfilePage() {
             <Card className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold">${token.price}</h2>
+                  <h2 className="text-2xl font-bold">${token[0].price}</h2>
                   <p className="text-sm text-green-500">+12.5% (24h)</p>
                 </div>
                 <div className="flex gap-2">
                   <Button asChild>
-                    <Link href={`/trade/${token.id}?action=buy`}>
+                    <Link href={`/trade/${token[0].id}?action=buy`}>
                       <Wallet className="mr-2 h-4 w-4" /> Buy
                     </Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link href={`/trade/${token.id}`}>
+                    <Link href={`/trade/${token[0].id}`}>
                       <Coins className="mr-2 h-4 w-4" /> Trade
                     </Link>
                   </Button>
@@ -267,7 +235,7 @@ export default function ProfilePage() {
             </TabsContent>
             <TabsContent value="holders">
               <Card className="p-6">
-                <TokenHolders tokenId={token?.id} />
+                <TokenHolders tokenId={token[0]?.id as string} />
               </Card>
             </TabsContent>
           </Tabs>

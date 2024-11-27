@@ -42,7 +42,11 @@ const TOKEN_HOLDERS: TokenHolder[] = [
   },
 ];
 
-export function TokenHolders() {
+interface HoldersProps {
+  tokenId: string;
+}
+
+export function TokenHolders({ tokenId }: HoldersProps) {
   return (
     <Table>
       <TableHeader>
